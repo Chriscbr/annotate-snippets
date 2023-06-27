@@ -1,0 +1,14 @@
+[package]
+name = "annotate-snippets-wasm"
+version = "0.1.0"
+edition = "2021"
+
+# required to compile to WebAssembly
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2.87"
+annotate-snippets = "0.9.1"
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.4"

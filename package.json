@@ -1,0 +1,35 @@
+{
+  "name": "annotate-snippets-wasm",
+  "author": "Chris Rybicki <crybicki98@gmail.com>",
+  "version": "0.1.0",
+  "description": "WebAssembly bindings for the Rust annotate-snippets crate",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "*.js",
+    "*.d.ts",
+    "*.wasm"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chriscbr/annotate-snippets-wasm"
+  },
+  "keywords": [
+    "wasm",
+    "error",
+    "diagnostic",
+    "annotate",
+    "snippets"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build:wasm-pack": "wasm-pack build --target nodejs --out-name index --out-dir ./pkg",
+    "build:typescript": "tsc -b",
+    "build": "npm run build:wasm-pack && npm run build:typescript",
+    "package": "npm pack"
+  },
+  "devDependencies": {
+    "typescript": "5.1.3",
+    "wasm-pack": "0.12.0"
+  }
+}
