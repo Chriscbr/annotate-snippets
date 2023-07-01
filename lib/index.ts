@@ -1,48 +1,47 @@
-import { annotate_snippet } from "../pkg";
+import * as bindings from "../pkg";
 
-console.log(annotate_snippet({
-  label: "mismatched types",
-  id: "E0308",
-  annotationType: "error",
-}, [], [{
-  source: `) -> Option<String> {
-    for ann in annotations {
-        match (ann.range.0, ann.range.1) {
-            (None, None) => continue,
-            (Some(start), Some(end)) if start > end_index => continue,
-            (Some(start), Some(end)) if start >= start_index => {
-                let label = if let Some(ref label) = ann.label {
-                    format!(" {}", label)
-                } else {
-                    String::from("")
-                };
+export type AnnotationType = "error" | "warning" | "info" | "note" | "help";
 
-                return Some(format!(
-                    "{}{}{}",
-                    " ".repeat(start - start_index),
-                    "^".repeat(end - start),
-                    label
-                ));
-            }
-            _ => continue,
-        }
-    }`,
-  lineStart: 51,
-  origin: "src/format.rs",
-  fold: false,
-  annotations: [
-    {
-      label: "expected `Option<String>` because of return type",
-      annotationType: "warning",
-      range: [5, 19],
-    },
-    {
-      label: "expected enum `std::option::Option`",
-      annotationType: "error",
-      range: [26, 724],
-    }
-  ]
-}], {
-  color: true,
-  anonymizedLineNumbers: false,
-}));
+export interface Annotation {
+  id?: string;
+  label?: string;
+  annotationType: AnnotationType;
+}
+
+export interface Slice {
+  source: string;
+  lineStart: number;
+  origin?: string;
+  annotations: SourceAnnotation[];
+  fold: boolean;
+}
+
+export interface SourceAnnotation {
+  range: [number, number];
+  label: string;
+  annotationType: AnnotationType;
+}
+
+export interface FormatOptions {
+  color: boolean;
+  anonymizedLineNumbers: boolean;
+  margin?: Margin;
+}
+
+export interface Margin {
+  whitespaceLeft: number;
+  spanLeft: number;
+  spanRight: number;
+  labelRight: number;
+  columnWidth: number;
+  maxLineLen: number;
+}
+
+export function annotate_snippet(
+  title: Annotation | undefined,
+  footer: Annotation[],
+  slices: Slice[],
+  options: FormatOptions,
+) {
+  return bindings.annotate_snippet(title, footer, slices, options);
+}

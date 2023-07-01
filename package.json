@@ -6,9 +6,12 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
-    "*.js",
-    "*.d.ts",
-    "*.wasm"
+    "lib/**/*.js",
+    "lib/**/*.d.ts",
+    "pkg/**/*.js",
+    "pkg/**/*.d.ts",
+    "pkg/**/*.wasm",
+    "pkg/**/*.wasm.d.ts"
   ],
   "repository": {
     "type": "git",

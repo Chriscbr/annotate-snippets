@@ -18,6 +18,7 @@ struct MyAnnotation {
     annotation_type: MyAnnotationType,
 }
 
+// cannot implement From trait because of borrow-checking issues
 fn convert_annotation(annotation: &MyAnnotation) -> Annotation {
     Annotation {
         id: annotation.id.as_deref(),
@@ -62,6 +63,7 @@ struct MySlice {
     fold: bool,
 }
 
+// cannot implement From trait because of borrow-checking issues
 fn convert_slice(slice: &MySlice) -> Slice {
     Slice {
         source: &slice.source,
@@ -84,6 +86,7 @@ struct MySourceAnnotation {
     annotation_type: MyAnnotationType,
 }
 
+// cannot implement From trait because of borrow-checking issues
 fn convert_source_annotation(source_annotation: &MySourceAnnotation) -> SourceAnnotation {
     SourceAnnotation {
         range: source_annotation.range,
