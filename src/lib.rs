@@ -125,15 +125,18 @@ pub fn annotate_snippet(
     };
     let title = parsed_title.as_ref().map(convert_annotation);
 
+    let parsed_footer = match serde_wasm_bindgen::from_value::<Vec<MyAnnotation>>(footer) {
+        Ok(annotation) => annotation,
+        Err(err) => {
+            error(err.to_string());
+            return String::from("Error");
+        }
+    };
+    let footer: Vec<Annotation> = parsed_footer.iter().map(convert_annotation).collect();
+
     let snippet = Snippet {
         title,
-        footer: vec![Annotation {
-            label: Some(
-                "expected type: `snippet::Annotation`\n   found type: `__&__snippet::Annotation`",
-            ),
-            id: None,
-            annotation_type: AnnotationType::Note,
-        }],
+        footer,
         slices: vec![Slice {
             source: "        slices: vec![\"A\",",
             line_start: 13,
