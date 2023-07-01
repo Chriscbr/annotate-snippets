@@ -1,5 +1,5 @@
 {
-  "name": "annotate-snippets-wasm",
+  "name": "annotate-snippets",
   "author": "Chris Rybicki <crybicki98@gmail.com>",
   "version": "0.1.0",
   "description": "WebAssembly bindings for the Rust annotate-snippets crate",
