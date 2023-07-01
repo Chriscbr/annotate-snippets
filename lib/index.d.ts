@@ -29,4 +29,4 @@ export interface Margin {
     columnWidth: number;
     maxLineLen: number;
 }
-export declare function annotate_snippet(title: Annotation | undefined, footer: Annotation[], slices: Slice[], options: FormatOptions): string;
+export declare function annotateSnippet(title: Annotation | undefined, footer: Annotation[], slices: Slice[], options: FormatOptions): string;

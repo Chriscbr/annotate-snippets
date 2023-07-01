@@ -37,7 +37,7 @@ export interface Margin {
   maxLineLen: number;
 }
 
-export function annotate_snippet(
+export function annotateSnippet(
   title: Annotation | undefined,
   footer: Annotation[],
   slices: Slice[],
