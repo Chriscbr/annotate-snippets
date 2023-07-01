@@ -1,3 +1,6 @@
-import { add } from "../pkg";
+import { annotate_snippet } from "../pkg";
 
-console.log(add(3, 5));
+console.log(annotate_snippet(null, null, null, {
+  color: true,
+  anonymizedLineNumbers: false,
+}));
