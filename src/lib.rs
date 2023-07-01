@@ -11,6 +11,50 @@ extern "C" {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+struct MyAnnotation {
+    id: Option<String>,
+    label: Option<String>,
+    #[serde(rename = "annotationType")]
+    annotation_type: MyAnnotationType,
+}
+
+// annotate_snippets::Annotation has a lifetime parameter, so the only way to safely convert
+// from our mirror struct is to keep a reference to the original struct around.
+fn convert_annotation(annotation: &MyAnnotation) -> Annotation {
+    Annotation {
+        id: annotation.id.as_deref(),
+        label: annotation.label.as_deref(),
+        annotation_type: annotation.annotation_type.into(),
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+enum MyAnnotationType {
+    #[serde(rename = "error")]
+    Error,
+    #[serde(rename = "warning")]
+    Warning,
+    #[serde(rename = "info")]
+    Info,
+    #[serde(rename = "note")]
+    Note,
+    #[serde(rename = "help")]
+    Help,
+}
+
+impl From<MyAnnotationType> for AnnotationType {
+    fn from(annotation_type: MyAnnotationType) -> Self {
+        match annotation_type {
+            MyAnnotationType::Error => AnnotationType::Error,
+            MyAnnotationType::Warning => AnnotationType::Warning,
+            MyAnnotationType::Info => AnnotationType::Info,
+            MyAnnotationType::Note => AnnotationType::Note,
+            MyAnnotationType::Help => AnnotationType::Help,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 struct MyFormatOptions {
     color: bool,
     #[serde(rename = "anonymizedLineNumbers")]
@@ -64,7 +108,7 @@ pub fn annotate_snippet(
     slices: JsValue,
     options: JsValue,
 ) -> String {
-    let options: FormatOptions = match serde_wasm_bindgen::from_value::<MyFormatOptions>(options) {
+    let opt: FormatOptions = match serde_wasm_bindgen::from_value::<MyFormatOptions>(options) {
         Ok(config) => config.into(),
         Err(err) => {
             error(err.to_string());
@@ -72,12 +116,17 @@ pub fn annotate_snippet(
         }
     };
 
+    let parsed_title = match serde_wasm_bindgen::from_value::<Option<MyAnnotation>>(title) {
+        Ok(annotation) => annotation,
+        Err(err) => {
+            error(err.to_string());
+            return String::from("Error");
+        }
+    };
+    let title = parsed_title.as_ref().map(convert_annotation);
+
     let snippet = Snippet {
-        title: Some(Annotation {
-            label: Some("mismatched types"),
-            id: Some("E0308"),
-            annotation_type: AnnotationType::Error,
-        }),
+        title,
         footer: vec![Annotation {
             label: Some(
                 "expected type: `snippet::Annotation`\n   found type: `__&__snippet::Annotation`",
@@ -96,7 +145,7 @@ pub fn annotate_snippet(
                 annotation_type: AnnotationType::Error,
             }],
         }],
-        opt: options,
+        opt,
     };
 
     let dl = DisplayList::from(snippet);
