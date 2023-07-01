@@ -2,7 +2,7 @@ use annotate_snippets::{
     display_list::{DisplayList, FormatOptions, Margin},
     snippet::{Annotation, AnnotationType, Slice, Snippet, SourceAnnotation},
 };
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(inline_js = "exports.error = function(s) { throw new Error(s) }")]
@@ -10,7 +10,7 @@ extern "C" {
     fn error(s: String);
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 struct MyAnnotation {
     id: Option<String>,
     label: Option<String>,
@@ -18,8 +18,6 @@ struct MyAnnotation {
     annotation_type: MyAnnotationType,
 }
 
-// annotate_snippets::Annotation has a lifetime parameter, so the only way to safely convert
-// from our mirror struct is to keep a reference to the original struct around.
 fn convert_annotation(annotation: &MyAnnotation) -> Annotation {
     Annotation {
         id: annotation.id.as_deref(),
@@ -28,7 +26,7 @@ fn convert_annotation(annotation: &MyAnnotation) -> Annotation {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[derive(Deserialize, Debug, Clone, Copy)]
 enum MyAnnotationType {
     #[serde(rename = "error")]
     Error,
@@ -54,7 +52,47 @@ impl From<MyAnnotationType> for AnnotationType {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
+struct MySlice {
+    source: String,
+    #[serde(rename = "lineStart")]
+    line_start: usize,
+    origin: Option<String>,
+    annotations: Vec<MySourceAnnotation>,
+    fold: bool,
+}
+
+fn convert_slice(slice: &MySlice) -> Slice {
+    Slice {
+        source: &slice.source,
+        line_start: slice.line_start,
+        origin: slice.origin.as_deref(),
+        annotations: slice
+            .annotations
+            .iter()
+            .map(convert_source_annotation)
+            .collect(),
+        fold: slice.fold,
+    }
+}
+
+#[derive(Deserialize, Debug)]
+struct MySourceAnnotation {
+    range: (usize, usize),
+    label: String,
+    #[serde(rename = "annotationType")]
+    annotation_type: MyAnnotationType,
+}
+
+fn convert_source_annotation(source_annotation: &MySourceAnnotation) -> SourceAnnotation {
+    SourceAnnotation {
+        range: source_annotation.range,
+        label: &source_annotation.label,
+        annotation_type: source_annotation.annotation_type.into(),
+    }
+}
+
+#[derive(Deserialize, Debug)]
 struct MyFormatOptions {
     color: bool,
     #[serde(rename = "anonymizedLineNumbers")]
@@ -72,7 +110,7 @@ impl From<MyFormatOptions> for FormatOptions {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 struct MyMargin {
     #[serde(rename = "whitespaceLeft")]
     whitespace_left: usize,
@@ -134,20 +172,19 @@ pub fn annotate_snippet(
     };
     let footer: Vec<Annotation> = parsed_footer.iter().map(convert_annotation).collect();
 
+    let parsed_slices = match serde_wasm_bindgen::from_value::<Vec<MySlice>>(slices) {
+        Ok(slices) => slices,
+        Err(err) => {
+            error(err.to_string());
+            return String::from("Error");
+        }
+    };
+    let slices: Vec<Slice> = parsed_slices.iter().map(convert_slice).collect();
+
     let snippet = Snippet {
         title,
         footer,
-        slices: vec![Slice {
-            source: "        slices: vec![\"A\",",
-            line_start: 13,
-            origin: Some("src/multislice.rs"),
-            fold: false,
-            annotations: vec![SourceAnnotation {
-                label: "expected struct `annotate_snippets::snippet::Slice`, found reference",
-                range: (21, 24),
-                annotation_type: AnnotationType::Error,
-            }],
-        }],
+        slices,
         opt,
     };
 
