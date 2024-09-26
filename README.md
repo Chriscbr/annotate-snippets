@@ -2,6 +2,8 @@
 
 An unnofficial set of Node.js (TypeScript) bindings for [annotate-snippets-rs](https://crates.io/crates/annotate-snippets) - a Rust library for annotation of programming code slices.
 
+If you're curious how a Rust library was turned into one that can be used from TypeScript/JavaScript, I wrote a blog post about the process [here](https://rybicki.io/blog/2023/06/27/rust-crate-into-typescript-library.html) - check it out!
+
 ## Usage
 
 ```typescript
